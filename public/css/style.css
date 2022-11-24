@@ -21,6 +21,7 @@ header{
     top: 0;
     right: 0;
     left: 0;
+    z-index: 3;
 }
 
 /* website name style */
@@ -113,10 +114,12 @@ footer{
     border: none;
     cursor: pointer;
     padding: 0.1rem;
+    z-index: 1;
 }
 /* on mouse hover */
 .dottee:hover{
-    background-color: white;
+    background-color: black;
+    color: white;
     border-radius: 12px;
 }
 #post-card{
@@ -124,8 +127,14 @@ footer{
     border-radius: 15px;
     margin-right: 50%;
     margin-left: 1rem;
-    padding: 1rem;
     background-color: white;
+}
+.post-card-a{
+    padding: 1rem;
+}
+.post-img{
+    width: 100%;
+    border-radius: 15px;
 }
 #post-card-header{
     

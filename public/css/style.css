@@ -95,5 +95,11 @@ footer{
    margin: 15% 5% 5% 5%;
 }
 
+.profile-img-sm{
+    width: 2.2rem;
+    border-radius: 50%;
+}
+.author-profile-name{
 
+}
 /* body section end */

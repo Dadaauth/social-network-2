@@ -106,16 +106,29 @@ footer{
  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
  font-size: small;
 }
-.bi-three-dots{
+.dottee{
     position: absolute;
-    right: 43%;
+    right: 53%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.1rem;
+}
+/* on mouse hover */
+.dottee:hover{
+    background-color: white;
+    border-radius: 12px;
 }
 #post-card{
-    border: 0.5px solid black;
-    margin-right: 40%;
+    border: 0.5px solid grey;
+    border-radius: 15px;
+    margin-right: 50%;
+    margin-left: 1rem;
+    padding: 1rem;
+    background-color: white;
 }
 #post-card-header{
-    color: ;
+    
 }
 /* for posts or news feed end */
 

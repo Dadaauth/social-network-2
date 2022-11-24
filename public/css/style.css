@@ -1,0 +1,12 @@
+body{
+    background-color:cornflowerblue;
+    margin: 0;
+}
+#header-nav{
+    background-color: rgb(59, 117, 226);
+    color: white;
+    font-family: 'Courier New', Courier, monospace;
+}
+header{
+    margin: 0;
+}

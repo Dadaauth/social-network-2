@@ -55,7 +55,7 @@ header{
 }
 #header-nav-2-ul{
     color: white;
-    margin-left: 25%;
+    margin-left: 20%;
 }
 .header-nav-2-ul-item{
     display: inline-block;
@@ -88,6 +88,14 @@ footer{
     position: relative;
     bottom: 0;
     right: 0;
+}
+.footer-ul{
+    display: inline-block;
+    margin-left: 25%;
+}
+.footer-ul-item{
+    display: inline-block;
+    margin: 0 12px;
 }
 /* footer section end */
 
@@ -140,5 +148,58 @@ footer{
     
 }
 /* for posts or news feed end */
-
+/* for icons rendered on webpage */
+.icons{
+    margin: 0 7px 0 7px;
+}
+/* for all messages display area */
+.chat-full-box{
+    border-radius: 12px;
+    border-color: rgb(58, 57, 57);
+    background-color: white;
+    /* margin-right: 60%; */
+    padding: 20px;
+}
+.chat-rec-box{
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+.chat-rec-box button{
+    width: 100%;
+    text-align: left;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    background-color: transparent;
+    margin: 5px;
+}
+/* for general messages to see more messages*/
+.see-more-button{
+    width: 100%;
+    text-align: start;
+    border: none;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 3px;
+    cursor: pointer;
+    background-color: rgb(59, 117, 226);
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size:large;
+}
+/* on mouse hover*/
+.see-more-button:hover{
+    box-shadow: 2px 2px 5px 5px #888888;
+}
+/* for see more button icon */
+.icon-b{
+    margin-left: 90%;
+}
+.icon-c{
+    
+}
+/* for all messages display area end */
+/* for personal messages */
+.ps-chat{
+    display: inline-block;
+}
+/* for personal messages end */
 /* body section end */

@@ -15,8 +15,13 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
 /////routing
+// homepage for news feed
 app.get("/", (req, res) => {
     res.render("index");
+});
+// messages page
+app.get("/messages", (req, res) => {
+    res.render("messages");
 });
 
 

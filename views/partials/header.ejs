@@ -1,14 +1,48 @@
 <!doctype html>
 <html>
     <head>
-        <title>Social Network</title>
+        <title>Social Network | <%=location%></title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css">
         <link rel="stylesheet" href="/css/style.css">
     </head>
     <body>
+        <!-- ejs code -->
+            <%let status%>
+            <%let status2%>
+            <%let status3%>
+            <%if(location === "Home"){ %>
+                <%status = "active";%>
+                <%status2 = ""%>
+                <%status3 = "";%>
+            <%} else if(location === "Messages") {%>
+                <%status = "";%>
+                <%status2 = "active"%>
+                <%status3 = "";%>
+            <%} else if(location === "Profile"){%>
+                <%status = "";%>
+                <%status2 = ""%>
+                <%status3 = "active";%>
+           <%}%>
+        <!-- ejs code end -->
         <!-- Header Start -->
       <header>
         <nav id="header-nav">
-            <h3>Socialite</h3>
+            <h3 id="brand-name"> <i class="bi bi-wechat"></i> Socialite</h3>
+            <ul id="header-nav-ul">
+                <li class="header-nav-ul-item">Login<i class="bi bi-caret-left"></i></li>
+                <li class="header-nav-ul-item"> <i class="bi bi-caret-right"></i>signup</li>
+            </ul>
         </nav>
+        <div id="second-header-nav">
+            <ul id="header-nav-2-ul">
+                <a href="/"><li class="header-nav-2-ul-item <%=status%>">Home</li></a>
+                <a href="/messages"><li class="header-nav-2-ul-item <%=status2%>">Messages</li></a>
+                <a href="/profile"><li class="header-nav-2-ul-item <%=status3%>">Profile</li></a>
+                <a href="/logout"><li class="header-nav-2-ul-item">Logout</li></a>
+            </ul>
+        </div>
+        <div id="header-bottom-spacing"></div>
       </header>
       <!-- Header End -->
+      <!-- body start -->
+      <div id="body-content">

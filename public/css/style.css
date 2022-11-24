@@ -1,12 +1,99 @@
+/* style body and href elements */
 body{
     background-color:cornflowerblue;
     margin: 0;
 }
+a{
+    text-decoration: none;
+    color: inherit;
+}
+/* header section*/
 #header-nav{
     background-color: rgb(59, 117, 226);
     color: white;
     font-family: 'Courier New', Courier, monospace;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid white;
 }
 header{
     margin: 0;
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
 }
+
+/* website name style */
+#brand-name{
+    display: inline-block;
+}
+
+/* header navigiation ul list */
+#header-nav-ul{
+    display: inline-block;
+    position: absolute;
+    right: 1rem;
+}
+.header-nav-ul-item{
+    display: inline-block;
+    padding: 1rem;
+    cursor: pointer;
+}
+/* on mouse hover */
+.header-nav-ul-item:hover{
+    background-color: black;
+}
+/* 2nd header navigation */
+#second-header-nav{
+    border-bottom: 1px solid white;
+    background-color: cornflowerblue;
+    position: inherit;
+    top: 4.2rem;
+    right: 0;
+    left: 0;
+}
+#header-nav-2-ul{
+    color: white;
+    margin-left: 25%;
+}
+.header-nav-2-ul-item{
+    display: inline-block;
+    margin-left: 2rem;
+    padding: 1rem;
+    border-radius: 2rem;
+    cursor: pointer;
+}
+/* on mouse hover */
+.header-nav-2-ul-item:hover{
+    background-color: white;
+    color: black;
+}
+.header-nav-2-ul-item.active{
+    background-color: white;
+    color: black;
+}
+#header-bottom-spacing{
+    background-color: cornflowerblue;
+    padding: 3rem;
+}
+
+/* header section end */
+
+/* footer section start */
+footer{
+    background-color: white;
+    color: black;
+    padding: 1rem;
+    position: relative;
+    bottom: 0;
+    right: 0;
+}
+/* footer section end */
+
+/* body section start */
+#body-content{
+   margin: 15% 5% 5% 5%;
+}
+
+
+/* body section end */

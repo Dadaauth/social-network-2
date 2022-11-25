@@ -155,7 +155,7 @@ footer{
 /* for all messages display area */
 .chat-full-box{
     border-radius: 12px;
-    border-color: rgb(58, 57, 57);
+    border: 1px solid rgb(58, 57, 57);
     background-color: white;
     /* margin-right: 60%; */
     padding: 20px;
@@ -196,10 +196,22 @@ footer{
 .icon-c{
     
 }
-/* for all messages display area end */
+/* for all messages display area END */
 /* for personal messages */
 .ps-chat{
-    display: inline-block;
+    border-radius: 12px;
+    border: 1px solid rgb(58, 57, 57);
+    background-color: white;
+    /* margin-right: 60%; */
+    padding: 20px;
+}
+.ps-chat-header{
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    line-height: 0;
+    font-size: small;
+}
+.ps-chat-header.name{
+    font-size: larger;
 }
 /* for personal messages end */
 /* body section end */

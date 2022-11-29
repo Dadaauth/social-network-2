@@ -1,0 +1,12 @@
+<%if(authenticated === true){%>
+<%-include("partials/header", {location: "Settings", authenticated: authenticated, username: username});%>
+<%} else{%>
+<%-include("partials/header", {location: "Settings", authenticated: authenticated});%>
+<%}%>
+<h3><i class="bi bi-tag-fill icons"></i>Settings</h3>
+<h2 class="profile-pg-name">Dada Clement</h2>
+
+<a href="/delete-account"><i class="bi bi-pencil"></i><p class="edit-profile-button">Delete Account</p></a></br>
+<a href="/profile">Go to profile</a>
+
+<%-include("partials/footer", {brandName: "Socialite"});%>

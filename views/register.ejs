@@ -1,4 +1,33 @@
-<%-include("partials/header"); %>
+<%-include("partials/header", {location: "Register", authenticated: authenticated});%>
+
+<h3 class="login-pg-header-text"><i class="bi bi-lock icons"></i>Register</h3>
 
 
-<%-include("partials/footer")%>
+<div class="login-form-container">
+    <h4 id="sign-in-header">Sign Up</h4>
+    <div class="login-form-container-2">
+        <form action="/signup" method="post" class="login-form">
+            <label for="f-name" id="form-label">First Name:</label>
+            <input type="text" name="first_name" id="f-name">
+            <label for="l-name" id="form-label">Last Name:</label>
+            <input type="text" name="last_name" id="l-name">
+            <label for="email" id="form-label">Email:</label>
+            <input type="email" name="email" id="email">
+            <label for="phone_number" id="form-label">Phone number:</label>
+            <input type="number" name="phone_number" id="phone_number">
+            <label for="birthday" id="form-label">Birthday:</label>
+            <input type="date" name="date_of_birth" id="birthday">
+            <label for="age" id="form-label">Age:</label>
+            <input type="number" name="age" id="age">
+            <label for="password" id="form-label">Password:</label>
+            <input type="password" name="password" id="password">
+            <input type="file" name="profile_picture" id="profile-pic-upload">
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+    <p style="text-align: center;">have an account?
+        <a href="/login" style="text-decoration: underline;">login</a>
+    </p>
+</div>
+
+<%-include("partials/footer", {brandName: "Socialite"});%>

@@ -40,6 +40,10 @@ header{
     padding: 1rem;
     cursor: pointer;
 }
+/* when active */
+.header-nav-ul-item.active-login{
+    background-color: black;
+}
 /* on mouse hover */
 .header-nav-ul-item:hover{
     background-color: black;
@@ -275,4 +279,74 @@ footer{
 }
 /* chatting */
 /* for personal messages end */
+
+/* profile page */
+.profile-img-md{
+    border-radius: 350px;
+    width: 14rem;
+    border: 7px solid wheat;
+}
+.profile-pg-name{
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+}
+.edit-profile-button{
+    display: inline-block;
+    padding: 1rem;
+    cursor: pointer;
+    background-color: wheat;
+    
+}
+/* profile page end */
+/* login page */
+.login-pg-header-text{
+    font-size: x-large;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    text-align: center;
+    text-decoration: overline underline;
+}
+.login-form-container{
+    width: 25%;
+    margin: 0 auto 0 auto;
+    background-color: rgb(138, 174, 240);
+    padding: 2rem;
+    border-radius: 10px;
+}
+.login-form-container-2{
+    
+}
+.login-form{
+    margin-left: 1rem;
+    
+}
+/* login form input boxes style */
+.login-form input{
+    display: block;
+    border-radius: 10px;
+    border:2px solid cornflowerblue;
+    height: 3rem;
+    font-size: larger;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+/* login form submit buttton style */
+.login-form button{
+    margin-top: 0.5rem;
+    margin-left: 12rem;
+    padding: 0.4rem;
+    border: none;
+    border-radius: 7px;
+    color: white;
+    background-color: cornflowerblue;
+}
+/* on hover on submit button */
+.login-form button:hover{
+    background-color: black;
+}
+#sign-in-header{
+    font-size: large;
+}
+#form-label{
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+/* login page end */
 /* body section end */

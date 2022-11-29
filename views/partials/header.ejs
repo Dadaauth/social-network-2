@@ -11,27 +11,57 @@
             <%let status%>
             <%let status2%>
             <%let status3%>
+            <%let status4%>
+            <%let status5%>
             <%if(location === "Home"){ %>
                 <%status = "active";%>
-                <%status2 = ""%>
+                <%status2 = "";%>
                 <%status3 = "";%>
+                <%status4 = "";%>
+                <%status5 = "";%>
             <%} else if(location === "Messages") {%>
                 <%status = "";%>
-                <%status2 = "active"%>
+                <%status2 = "active";%>
                 <%status3 = "";%>
+                <%status4 = "";%>
+                <%status5 = "";%>
             <%} else if(location === "Profile"){%>
                 <%status = "";%>
-                <%status2 = ""%>
+                <%status2 = "";%>
                 <%status3 = "active";%>
-           <%}%>
+                <%status4 = "";%>
+                <%status5 = "";%>
+           <%} else if(location === "Login"){%>
+                <%status = "";%>
+                <%status2 = "";%>
+                <%status3 = "";%>
+                <%status4 = "active-login";%>
+                <%status5 = "";%>
+            <%} else if(location === "Register"){%>
+                <%status = "";%>
+                <%status2 = "";%>
+                <%status3 = "";%>
+                <%status4 = "";%>
+                <%status5 = "active-login";%>
+            <%} else{%>
+                <%status = "";%>
+                <%status2 = "";%>
+                <%status3 = "";%>
+                <%status4 = "";%>
+                <%status5 = "";%>
+            <%}%>
         <!-- ejs code end -->
         <!-- Header Start -->
       <header>
         <nav id="header-nav">
             <a href="/"><h3 id="brand-name"> <i class="bi bi-wechat"></i> Socialite</h3></a>
             <ul id="header-nav-ul">
-                <li class="header-nav-ul-item">Login<i class="bi bi-caret-left"></i></li>
-                <li class="header-nav-ul-item"> <i class="bi bi-caret-right"></i>signup</li>
+                <%if(authenticated === true){%>
+                    <li class="header-nav-ul-item">Howdy <%=username%><i class="bi bi-caret-left"></i></li>
+                <%}else if(authenticated === false){%>
+                    <a href="/login"><li class="header-nav-ul-item <%=status4%>">Login<i class="bi bi-caret-left"></i></li></a>
+                    <a href="/signup"><li class="header-nav-ul-item <%=status5%>"> <i class="bi bi-caret-right"></i>signup</li></a>
+                <%}%>
             </ul>
         </nav>
         <div id="second-header-nav">

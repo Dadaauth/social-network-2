@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const ejs = require("ejs");
 const session = require("express-session");
+const MongoStore = require("connect-mongo");
 const passport = require("passport");
 const passportLocalMongoose = require("passport-local-mongoose");
 const findOrCreate = require("mongoose-findorcreate");
@@ -14,18 +15,33 @@ const app = express();
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
+
+// connect to mongoose
+// mongoose.connect("mongodb+srv://authority:4141clement%3F@cluster0.gs6bw9m.mongodb.net/socialiteDB");
+const conn = mongoose.connect("mongodb://localhost:27017/socialiteDB");
+
+ 
+// get mongoose client
+const mongooseClient = mongoose.connection.getClient();
+
 // express session and passport connecting to the session
 app.use(session({
     secret: process.env.SECRET,
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    name: "socialite",
+    store: MongoStore.create({
+        // mongoUrl: 'mongodb://localhost:27017/socialiteDB',
+        client: mongooseClient,
+        touchAfter: 24 * 3600,
+        crypto: {
+            secret: process.env.SECRET,
+          }
+    })
 }));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// connect to mongoose
-// mongoose.connect("mongodb+srv://authority:4141clement%3F@cluster0.gs6bw9m.mongodb.net/socialiteDB");
-    mongoose.connect("mongodb://localhost:27017/socialiteDB");
 
 // user mongoose schema
 const userSchema = new mongoose.Schema({
@@ -141,16 +157,31 @@ app.get("/messages", (req, res) => {
 });
 app.get("/message", (req, res) => {
     if(req.isAuthenticated()){
-        if(req.query.fgId){   //change this to check if the user to be messaged with that id exists!
-            res.render("messages", {
-                type: "ps-messages", 
-                authenticated: true, 
-                username: req.user.username, 
-                fgId: req.query.fgId
+
+        if(req.query.fgId){
+            Usermsgs.findOne({userId: req.user.id, "values.fgId": req.query.fgId}, (err, found) => {
+                if(found != null){
+                    res.render("messages", {
+                        type: "ps-messages", 
+                        authenticated: true, 
+                        username: req.user.username, 
+                        fgId: req.query.fgId,
+                        msgValues: found.values
+                    });
+                }else{
+                    res.render("messages", {
+                        type: "ps-messages", 
+                        authenticated: true, 
+                        username: req.user.username, 
+                        fgId: req.query.fgId,
+                    });
+                }
             });
         } else{
-            res.redirect("/");
+            res.redirect("/messages");
         }
+
+
     }else{
         res.redirect("/login?url=message?fgId=" + req.query.fgId);
     }
@@ -289,6 +320,7 @@ app.post("/login", (req, res) => {
  }
        
 });
+
 // messaging POST requests
 app.post("/message", (req, res) => {
     if(req.isAuthenticated()){
@@ -296,7 +328,8 @@ app.post("/message", (req, res) => {
 
         Usermsgs.findOne({userId: req.user.id}, (err, found) => {
 
-            if(found != ""){
+            if(found != null){
+        
                 // update the records
                 User.findById({_id: req.query.fgId}, (err, got) => {
                     const userId = req.user.id;
@@ -320,7 +353,7 @@ app.post("/message", (req, res) => {
                     const message = req.body.message;
                 
                     Usermsgs.findOne({"values.fgId": req.query.fgId}, (err, found) => {
-                        if(found != ""){
+                        if(found != null){
                             Usermsgs.findOneAndUpdate({userId: req.user.id, "values.fgId": req.query.fgId}, 
                             {$push: {
                                 "values.$.message": [{
@@ -451,7 +484,13 @@ app.post("/message", (req, res) => {
                             }], 
                         }],
                     });
-                    newUserMsgs.save();
+                    newUserMsgs.save((err) => {
+                        if(err){
+                            console.log("Error: " + err);
+                        }else{
+                            console.log("successful");
+                        }
+                    });
                 });
             }
         });
@@ -460,9 +499,9 @@ app.post("/message", (req, res) => {
     // save to friend account
 
     Usermsgs.findOne({userId: req.query.fgId}, (err, found) => {
-        if(found != ""){
-            
-            // update the records
+        if(found != null){
+            console.log(found);
+        //     // update the records
             User.findById({_id: req.query.fgId}, (err, got) => {
                 const userId = req.query.fgId;
                 const username = got.username;
@@ -485,7 +524,7 @@ app.post("/message", (req, res) => {
                 const message = req.body.message;
             
                 Usermsgs.findOne({"values.fgId": req.user.id}, (err, found) => {
-                    if(found != ""){
+                    if(found != null){
                         Usermsgs.findOneAndUpdate({userId: req.query.fgId, "values.fgId": req.user.id}, 
                         {$push: {
                             "values.$.message": [{
@@ -503,7 +542,6 @@ app.post("/message", (req, res) => {
                         (err, done) => {
                             if(done){
                                 console.log("Succesful");
-                                res.redirect("/message?fgId=" + req.query.fgId);
                             } else{
                                 console.log("error encountered");
                             }
@@ -620,13 +658,15 @@ app.post("/message", (req, res) => {
                 });
                 newUserMsgs.save((err) => {
                     if(!err){
-                        res.redirect("/message?fgId=" + req.query.fgId)
+                        console.log("Successful");
+                    }else{
+                        console.log("Error: " + err);
                     }
                 });
             });
         }
     });
-    
+    res.redirect("/message?fgId=" + req.query.fgId);
 }else{
     res.redirect("/login?url=message?fgId=" + req.query.fgId);
 }

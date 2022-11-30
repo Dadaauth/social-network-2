@@ -70,24 +70,46 @@
                 <p class="ps-chat-header last-seen"><i class="bi bi-eye-fill"></i> Last seen Today at 12:03pm</p>
             </div>
         </div>
-        <div class="chat-id-1-2">
-            <img src="images/elizabethprofile.jpg" alt="profile-picture" class="ps-chat-profile-img-xsm">
-            <p class="chat-id-1">Hi!</p></br>
-            <img src="images/profile.jpg" alt="profile-picture" class="ps-chat-profile-img-xsm">
-            <p class="chat-id-2">Hello!</p></br>
-            <img src="images/elizabethprofile.jpg" alt="profile-picture" class="ps-chat-profile-img-xsm">
-            <p class="chat-id-1">How have you been?</p></br>
-            <img src="images/profile.jpg" alt="profile-picture" class="ps-chat-profile-img-xsm">
-            <p class="chat-id-2">great. you?</p></br>
-            <img src="images/elizabethprofile.jpg" alt="profile-picture" class="ps-chat-profile-img-xsm">
-            <p class="chat-id-1">cool. i wanted to remind you about the dinner party we have today.</p></br>
-            <img src="images/elizabethprofile.jpg" alt="profile-picture" class="ps-chat-profile-img-xsm">
-            <p class="chat-id-1">make sure you don't miss it.</p></br>
-            <img src="images/profile.jpg" alt="profile-picture" class="ps-chat-profile-img-xsm">
-            <p class="chat-id-2">Sure. I appreciate the reminder. Also hoping to see you there!</p></br>
-            <img src="images/elizabethprofile.jpg" alt="profile-picture" class="ps-chat-profile-img-xsm">
-            <p class="chat-id-1">Alright. take care then.</p></br>
-        </div><hr/>
+
+        <%if(typeof msgValues !== "undefined"){%>
+            <div class="chat-id-1-2">
+                <%msgValues.forEach((msgValue) => {%>
+                    <%msgValue.message.forEach((msgValueMessage) => {%>
+                        <%if(msgValueMessage.msgType === "sent"){%>
+                            <img src="images/elizabethprofile.jpg" alt="profile-picture" class="ps-chat-profile-img-xsm">
+                            <p class="chat-id-1"><%=msgValueMessage.message%></p></br>
+                        <%}else if(msgValueMessage.msgType === "recieved"){%>
+                            <img src="images/elizabethprofile.jpg" alt="profile-picture" class="ps-chat-profile-img-xsm">
+                            <p class="chat-id-2"><%=msgValueMessage.message%></p></br>
+                        <%}%>
+                    <%});%>
+                <%});%>
+            </div><hr/>
+    
+        <%}else{%>
+            <div class="chat-id-1-2">
+                <img src="images/elizabethprofile.jpg" alt="profile-picture" class="ps-chat-profile-img-xsm">
+                <p class="chat-id-1">Hi!</p></br>
+                <img src="images/profile.jpg" alt="profile-picture" class="ps-chat-profile-img-xsm">
+                <p class="chat-id-2">Hello!</p></br>
+                <img src="images/elizabethprofile.jpg" alt="profile-picture" class="ps-chat-profile-img-xsm">
+                <p class="chat-id-1">How have you been?</p></br>
+                <img src="images/profile.jpg" alt="profile-picture" class="ps-chat-profile-img-xsm">
+                <p class="chat-id-2">great. you?</p></br>
+                <img src="images/elizabethprofile.jpg" alt="profile-picture" class="ps-chat-profile-img-xsm">
+                <p class="chat-id-1">cool. i wanted to remind you about the dinner party we have today.</p></br>
+                <img src="images/elizabethprofile.jpg" alt="profile-picture" class="ps-chat-profile-img-xsm">
+                <p class="chat-id-1">make sure you don't miss it.</p></br>
+                <img src="images/profile.jpg" alt="profile-picture" class="ps-chat-profile-img-xsm">
+                <p class="chat-id-2">Sure. I appreciate the reminder. Also hoping to see you there!</p></br>
+                <img src="images/elizabethprofile.jpg" alt="profile-picture" class="ps-chat-profile-img-xsm">
+                <p class="chat-id-1">Alright. take care then.</p></br>
+            </div><hr/>
+    
+        <%}%>
+        
+
+
         <!-- <img src="images/profile.jpg" alt="profile-picture" class="ps-chat-profile-img-xsm"> -->
         <form action="/message?fgId=<%=fgId%>" id="message" method="post" class="message-form">
             <textarea name="message" id="message" cols="40" rows="3" class="message-input"></textarea>

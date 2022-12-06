@@ -4,11 +4,12 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const ejs = require("ejs");
+const bcrypt = require("bcrypt");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const passport = require("passport");
-const passportLocalMongoose = require("passport-local-mongoose");
-const findOrCreate = require("mongoose-findorcreate");
+const passportCustom = require("passport-custom");
+const CustomStrategy = passportCustom.Strategy;
 
 const app = express();
 
@@ -59,35 +60,32 @@ const userSchema = new mongoose.Schema({
     groups: Number
 });
 
-// add user schema plugins
-userSchema.plugin(passportLocalMongoose);
-userSchema.plugin(findOrCreate);
+
 // define User model
 const User = mongoose.model("User", userSchema);
 
 // for passport login and signup authentication
-passport.use(User.createStrategy());
+passport.use('userLR', new CustomStrategy(
+    function(req, done) {
+        User.findOne({
+            email_address: req.body.email,
+        }, (err, user) => {
+            done(err, user);
+        });
+    }
+));
 
-passport.serializeUser(function(user, cb) {
-    process.nextTick(function() {
-            return cb(null, {
-        id: user.id,
-        username: user.username,
-        email_address: user.email_address,
-        picture: user.picture,
-        facebookId: user.facebookId,
-        facebookName: user.facebookName,
-        googleId: user.googleId
-      });
-      
-    });
+
+passport.serializeUser(function(user, done) {
+    done(null, user.id);
   });
   
-  passport.deserializeUser(function(user, cb) {
-    process.nextTick(function() {
-      return cb(null, user);
+  passport.deserializeUser(function(id, done) {
+    User.findById(id, function (err, user) {
+      done(err, user);
     });
   });
+
 // passport authentication END
 
 
@@ -135,6 +133,13 @@ const Usermsgs = mongoose.model("Usermsgs", usrmsgsSchema);
 /////Routing
 // server GET Requests
 // homepage for news feed
+app.get("/test", (req, res) => {
+    User.findOne({_id: "638fa7b86b9ca34876fe1647"}, (err, got) => {
+        bcrypt.compare("4141clement?", got.password, function(err, result) {
+           console.log(result);
+        });
+    });
+});
 app.get("/", (req, res) => {
     User.find({}, (err, users) => {
         if(!err){
@@ -149,7 +154,6 @@ app.get("/", (req, res) => {
 // messages
 app.get("/messages", (req, res) => {
     if(req.isAuthenticated()){
-        console.log(req.user.email_address);
         res.render("messages", {type: "gn-messages", authenticated: true, username: req.user.username});
     } else{
         res.redirect("/login?url=messages");
@@ -247,77 +251,83 @@ app.get("/logout", (req, res) => {
 // server POST Requests
 // signup POST request
 app.post("/signup", (req, res) => {
-    // let only lowercase of the first name and last name be saved to the database and no space between them.
-    const username = req.body.last_name + " " + req.body.first_name;
     const first_name = req.body.first_name;
     const last_name = req.body.last_name;
-    const email_adddress = req.body.email;
+    const username = last_name + first_name;
+    const email_address = req.body.email;
     const phone_number = req.body.phone_number;
     const age = req.body.age;
     const date_of_birth = req.body.date_of_birth;
-    const password = req.body.password;
     const profile_picture = req.body.profile_picture;
-    
-    User.register({
-        username: username, 
-        first_name: first_name, 
-        last_name: last_name, 
-        email_adddress: email_adddress, 
-        phone_number: phone_number,
-        age: age,
-        date_of_birth: date_of_birth,
-        profile_picture: profile_picture,
-    }, password, (err, user) => {
-        if(err){
-            res.render("sign_up_err");
-        } else{
-            res.redirect("/");
+
+    bcrypt.hash(req.body.password, 5, (err, hash) => {
+        if(!err){
+            const passwordHash = hash;
+            const user = new User({
+                username: username,
+                first_name: first_name,
+                last_name: last_name,
+                email_address: email_address,
+                phone_number: phone_number,
+                age: age,
+                date_of_birth: date_of_birth,
+                profile_picture: profile_picture,
+                password: passwordHash,
+            });
+            user.save((err) => {
+                if(!err){
+                    res.send("Saved Succesfully!")
+                }
+            });
         }
     });
+
 });
   
 // login POST request  
-app.post("/login", (req, res) => {
-
- if(req.query.type === "username"){
-    const user = new User({
-        username: req.body.username,
-        password: req.body.password
-    });
-    req.login(user, function(err){
-        if(err){
-            console.log(err);
-        } else {
-            passport.authenticate("local")
-            (req, res, function(err){
-                if(err){
-                    console.log(err);
-                }
-                res.redirect("/" + req.query.url);
-            });
-        }
-    }); 
- }
+app.post("/login", 
+passport.authenticate('userLR', { failureRedirect: "/login" }),
+(req, res) => {
+res.redirect("/");
+//  if(req.query.type === "username"){
+//     const user = new User({
+//         username: req.body.username,
+//         password: req.body.password
+//     });
+//     req.login(user, function(err){
+//         if(err){
+//             console.log(err);
+//         } else {
+//             passport.authenticate("local")
+//             (req, res, function(err){
+//                 if(err){
+//                     console.log(err);
+//                 }
+//                 res.redirect("/" + req.query.url);
+//             });
+//         }
+//     }); 
+//  }
     
- if(req.query.type === "email"){
-    const user = new User({
-        email_address: req.body.email,
-        password: req.body.password
-    });
-    req.login(user, function(err){
-        if(err){
-            console.log(err);
-        } else {
-            passport.authenticate("local")
-            (req, res, function(err){
-                if(err){
-                    console.log(err);
-                }
-                res.redirect("/" + req.query.url);
-            });
-        }
-    }); 
- }
+//  if(req.query.type === "email"){
+//     const user = new User({
+//         email_address: req.body.email,
+//         password: req.body.password
+//     });
+//     req.login(user, function(err){
+//         if(err){
+//             console.log(err);
+//         } else {
+//             passport.authenticate("local")
+//             (req, res, function(err){
+//                 if(err){
+//                     console.log(err);
+//                 }
+//                 res.redirect("/" + req.query.url);
+//             });
+//         }
+//     }); 
+//  }
        
 });
 

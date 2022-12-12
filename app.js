@@ -19,7 +19,7 @@ app.use(express.static("public"));
 
 // connect to mongoose
 // mongoose.connect("mongodb+srv://authority:4141clement%3F@cluster0.gs6bw9m.mongodb.net/socialiteDB");
-const conn = mongoose.connect("mongodb://localhost:27017/socialiteDB");
+mongoose.connect("mongodb://localhost:27017/socialiteDB");
 
  
 // get mongoose client
@@ -69,6 +69,7 @@ passport.use('userLR', new CustomStrategy(
     function(req, done) {
         User.findOne({
             email_address: req.body.email,
+            password: req.body.password
         }, (err, user) => {
             done(err, user);
         });
@@ -133,23 +134,17 @@ const Usermsgs = mongoose.model("Usermsgs", usrmsgsSchema);
 /////Routing
 // server GET Requests
 // homepage for news feed
-app.get("/test", (req, res) => {
-    User.findOne({_id: "638fa7b86b9ca34876fe1647"}, (err, got) => {
-        bcrypt.compare("4141clement?", got.password, function(err, result) {
-           console.log(result);
-        });
-    });
-});
 app.get("/", (req, res) => {
-    User.find({}, (err, users) => {
-        if(!err){
-            if(req.isAuthenticated()){
-                res.render("index", {authenticated: true, username: req.user.username, users: users});
-            } else {
-                res.render("index", {authenticated: false, users: users});
+    if(req.isAuthenticated()){
+        User.find({}, (err, users) => {
+            if(!err){
+                res.render("index", {authenticated: true, user_id: req.user.id, username: req.user.username, users: users});     
             }
-        }
-    });
+        });
+    }
+    else{
+        res.redirect("/login")
+    }
 });
 // messages
 app.get("/messages", (req, res) => {
@@ -164,22 +159,31 @@ app.get("/message", (req, res) => {
 
         if(req.query.fgId){
             Usermsgs.findOne({userId: req.user.id, "values.fgId": req.query.fgId}, (err, found) => {
-                if(found != null){
-                    res.render("messages", {
-                        type: "ps-messages", 
-                        authenticated: true, 
-                        username: req.user.username, 
-                        fgId: req.query.fgId,
-                        msgValues: found.values
-                    });
-                }else{
-                    res.render("messages", {
-                        type: "ps-messages", 
-                        authenticated: true, 
-                        username: req.user.username, 
-                        fgId: req.query.fgId,
-                    });
-                }
+                User.findOne({_id: req.query.fgId}, (err, fgss) => {
+                    if(fgss){
+                        if(found != null){
+                            res.render("messages", {
+                                type: "ps-messages", 
+                                authenticated: true, 
+                                username: req.user.username, 
+                                fgId: req.query.fgId,
+                                fgDetails: fgss,
+                                msgValues: found.values
+                            });
+                        }else{
+                            res.render("messages", {
+                                type: "ps-messages", 
+                                authenticated: true, 
+                                username: req.user.username, 
+                                fgDetails: fgss,
+                                fgId: req.query.fgId,
+                            });
+                        }
+                    }
+                    else{
+                        res.redirect("/messages");
+                    }
+                });
             });
         } else{
             res.redirect("/messages");
@@ -199,27 +203,19 @@ app.get("/profile", (req, res) => {
     }
 });
 // login page
-// login with username
 app.get("/login", (req, res) => {
     if(req.isAuthenticated()){
         res.redirect("back");
     } else{
-        if(req.query.url){
-            res.render("login", {loginType: "username", authenticated: false, url: req.query.url});
-        }else{
-            res.render("login", {loginType: "username", authenticated: false, url: " "});
+        if(req.query.message){
+            res.render("login", {loginType: "email", authenticated: false, url: " ", message: req.query.message});
         }
-    }
-});
-// login with email
-app.get("/login-email", (req, res) => {
-    if(req.isAuthenticated()){
-        res.redirect("back");
-    } else{
-        if(req.query.url){
-            res.render("login", {loginType: "email", authenticated: false, url: req.query.url});
-        }else{
-            res.render("login", {loginType: "email", authenticated: false, url: " "});
+        else{
+            if(req.query.url){
+                res.render("login", {loginType: "email", authenticated: false, url: req.query.url});
+            }else{
+                res.render("login", {loginType: "email", authenticated: false, url: " "});
+            }
         }
     }
 });
@@ -250,7 +246,8 @@ app.get("/logout", (req, res) => {
 
 // server POST Requests
 // signup POST request
-app.post("/signup", (req, res) => {
+app.post("/signup",
+(req, res) => {
     const first_name = req.body.first_name;
     const last_name = req.body.last_name;
     const username = last_name + first_name;
@@ -259,36 +256,55 @@ app.post("/signup", (req, res) => {
     const age = req.body.age;
     const date_of_birth = req.body.date_of_birth;
     const profile_picture = req.body.profile_picture;
+    const password = req.body.password;
 
-    bcrypt.hash(req.body.password, 5, (err, hash) => {
+    const user = new User({
+        username: username,
+        first_name: first_name,
+        last_name: last_name,
+        email_address: email_address,
+        phone_number: phone_number,
+        age: age,
+        date_of_birth: date_of_birth,
+        profile_picture: profile_picture,
+        password: password,
+    });
+    user.save((err) => {
         if(!err){
-            const passwordHash = hash;
-            const user = new User({
-                username: username,
-                first_name: first_name,
-                last_name: last_name,
-                email_address: email_address,
-                phone_number: phone_number,
-                age: age,
-                date_of_birth: date_of_birth,
-                profile_picture: profile_picture,
-                password: passwordHash,
-            });
-            user.save((err) => {
-                if(!err){
-                    res.send("Saved Succesfully!")
-                }
-            });
+            res.redirect("/login?message=Signup successful, please login!")
         }
     });
+
+
+    // bcrypt.hash(req.body.password, 5, (err, hash) => {
+    //     if(!err){
+    //         const passwordHash = hash;
+    //         const user = new User({
+    //             username: username,
+    //             first_name: first_name,
+    //             last_name: last_name,
+    //             email_address: email_address,
+    //             phone_number: phone_number,
+    //             age: age,
+    //             date_of_birth: date_of_birth,
+    //             profile_picture: profile_picture,
+    //             password: passwordHash,
+    //         });
+    //         user.save((err) => {
+    //             if(!err){
+    //                 res.send("Saved Succesfully!")
+    //             }
+    //         });
+    //     }
+    // });
 
 });
   
 // login POST request  
 app.post("/login", 
-passport.authenticate('userLR', { failureRedirect: "/login" }),
+passport.authenticate('userLR', { failureRedirect: "/login"}),
 (req, res) => {
-res.redirect("/");
+res.redirect("/" + req.query.url);
 //  if(req.query.type === "username"){
 //     const user = new User({
 //         username: req.body.username,
@@ -362,56 +378,48 @@ app.post("/message", (req, res) => {
                     const msgStatus = "read";   
                     const message = req.body.message;
                 
-                    Usermsgs.findOne({"values.fgId": req.query.fgId}, (err, found) => {
-                        if(found != null){
-                            Usermsgs.findOneAndUpdate({userId: req.user.id, "values.fgId": req.query.fgId}, 
-                            {$push: {
-                                "values.$.message": [{
-                                    msgType: msgType,
-                                    status: msgStatus,
-                                    message: message,
-                                    "date.$.day": day,
-                                    "date.$.month": month,
-                                    "date.$.year": year,
-                                    "time.$.second": second,
-                                    "time.$.minute": minute,
-                                    "time.$.hour": hour,
-                                }],
-                            }},
-                            (err, done) => {
-                                if(done){
-                                    console.log("successful");
-                                }else{
-                                    console.log("error encountered")
-                                }
-                            });
+                    Usermsgs.findOne({userId: req.user.id, "values.fgId": req.query.fgId}, (err, found) => {
 
-                           
+            
                             
-                        }else{
-                            // if not available create a new values array.
-                            Usermsgs.findOneAndUpdate({userId: req.user.id}, 
-                            {$push: {
-                                values: [{
-                                    fgType: type,
-                                    fgId: fgId,
-                                    name: name,
-                                    picture: picture,
-                                    status: status,
-                                    date: [{
-                                        day: day,
-                                        month: month, 
-                                        year: year,
-                                    }],
-                                    time: [{
-                                        second: second,
-                                        minute: minute, 
-                                        hour: hour,
-                                    }],
-                                    message: [{
-                                        msgType: msgType,
-                                        status: msgStatus,
-                                        message: message,
+                            if(found != null){
+                                found.values.forEach((foundValues) => {
+                                    if(foundValues.fgId == req.query.fgId){
+                                        Usermsgs.findOneAndUpdate({userId: req.user.id, "values.fgId": req.query.fgId}, 
+                                        {$push: {
+                                            "values.$.message": [{
+                                                msgType: msgType,
+                                                status: msgStatus,
+                                                message: message,
+                                                "date.$.day": day,
+                                                "date.$.month": month,
+                                                "date.$.year": year,
+                                                "time.$.second": second,
+                                                "time.$.minute": minute,
+                                                "time.$.hour": hour,
+                                            }],
+                                        }},
+                                        (err, done) => {
+                                            // if(done){
+                                            //     console.log("successful");
+                                            // }else{
+                                            //     console.log("error encountered", err)
+                                            // }
+                                        });  
+                                    }
+                                });  
+                            }   
+                            else{
+                                // if not available create a new values array.
+                
+                                Usermsgs.findOneAndUpdate({userId: req.user.id}, 
+                                {$push: {
+                                    values: [{
+                                        fgType: type,
+                                        fgId: fgId,
+                                        name: name,
+                                        picture: picture,
+                                        status: status,
                                         date: [{
                                             day: day,
                                             month: month, 
@@ -422,17 +430,31 @@ app.post("/message", (req, res) => {
                                             minute: minute, 
                                             hour: hour,
                                         }],
-                                    }], 
-                                }],
-                            }},
-                            (err, done) => {
-                                if(done){
-                                    console.log("Succesful");
-                                }else{
-                                    console.log("error encountered!");
-                                }
-                            });
-                        }
+                                        message: [{
+                                            msgType: msgType,
+                                            status: msgStatus,
+                                            message: message,
+                                            date: [{
+                                                day: day,
+                                                month: month, 
+                                                year: year,
+                                            }],
+                                            time: [{
+                                                second: second,
+                                                minute: minute, 
+                                                hour: hour,
+                                            }],
+                                        }], 
+                                    }],
+                                }},
+                                (err, done) => {
+                                    // if(done){
+                                    //     console.log("Succesful");
+                                    // }else{
+                                    //     console.log("error encountered!", err);
+                                    // }
+                                });
+                            }
                     });
             });
 
@@ -495,11 +517,11 @@ app.post("/message", (req, res) => {
                         }],
                     });
                     newUserMsgs.save((err) => {
-                        if(err){
-                            console.log("Error: " + err);
-                        }else{
-                            console.log("successful");
-                        }
+                        // if(err){
+                        //     console.log("Error: " + err);
+                        // }else{
+                        //     console.log("successful");
+                        // }
                     });
                 });
             }
@@ -510,7 +532,6 @@ app.post("/message", (req, res) => {
 
     Usermsgs.findOne({userId: req.query.fgId}, (err, found) => {
         if(found != null){
-            console.log(found);
         //     // update the records
             User.findById({_id: req.query.fgId}, (err, got) => {
                 const userId = req.query.fgId;
@@ -533,30 +554,33 @@ app.post("/message", (req, res) => {
                 const msgStatus = "unread";   
                 const message = req.body.message;
             
-                Usermsgs.findOne({"values.fgId": req.user.id}, (err, found) => {
+                Usermsgs.findOne({userId: req.query.fgId, "values.fgId": req.user.id}, (err, found) => {
                     if(found != null){
-                        Usermsgs.findOneAndUpdate({userId: req.query.fgId, "values.fgId": req.user.id}, 
-                        {$push: {
-                            "values.$.message": [{
-                                msgType: msgType,
-                                status: msgStatus,
-                                message: message,
-                                "date.$.day": day,
-                                "date.$.month": month,
-                                "date.$.year": year,
-                                "time.$.second": second,
-                                "time.$.minute": minute,
-                                "time.$.hour": hour,
-                            }],
-                        }},
-                        (err, done) => {
-                            if(done){
-                                console.log("Succesful");
-                            } else{
-                                console.log("error encountered");
+                        found.values.forEach((foundValues) => {
+                            if(foundValues.fgId == req.user.id){
+                                Usermsgs.findOneAndUpdate({userId: req.query.fgId, "values.fgId": req.user.id}, 
+                                {$push: {
+                                    "values.$.message": [{
+                                        msgType: msgType,
+                                        status: msgStatus,
+                                        message: message,
+                                        "date.$.day": day,
+                                        "date.$.month": month,
+                                        "date.$.year": year,
+                                        "time.$.second": second,
+                                        "time.$.minute": minute,
+                                        "time.$.hour": hour,
+                                    }],
+                                }},
+                                (err, done) => {
+                                    // if(done){
+                                    //     console.log("Succesful");
+                                    // } else{
+                                    //     console.log("error encountered");
+                                    // }
+                                });
                             }
                         });
-
                         
                         
                     }else{
@@ -597,11 +621,11 @@ app.post("/message", (req, res) => {
                                 }],
                             }},
                             (err, done) => {
-                                if(done){
-                                    console.log("Succesful");
-                                }else{
-                                    console.log("error encountered!");
-                                }
+                                // if(done){
+                                //     console.log("Succesful");
+                                // }else{
+                                //     console.log("error encountered!");
+                                // }
                             });
                     }
                 });
@@ -667,11 +691,11 @@ app.post("/message", (req, res) => {
                     }],
                 });
                 newUserMsgs.save((err) => {
-                    if(!err){
-                        console.log("Successful");
-                    }else{
-                        console.log("Error: " + err);
-                    }
+                    // if(!err){
+                    //     console.log("Successful");
+                    // }else{
+                    //     console.log("Error: " + err);
+                    // }
                 });
             });
         }

@@ -6,22 +6,22 @@
 <div class="login-form-container">
     <h4 id="sign-in-header">Sign Up</h4>
     <div class="login-form-container-2">
-        <form action="/signup" method="post" class="login-form">
+        <form action="/signup" method="post" class="login-form" enctype="multipart/form-data">
             <label for="f-name" id="form-label">First Name:</label>
-            <input type="text" name="first_name" id="f-name">
+            <input type="text" name="first_name" id="f-name" required>
             <label for="l-name" id="form-label">Last Name:</label>
-            <input type="text" name="last_name" id="l-name">
+            <input type="text" name="last_name" id="l-name" required>
             <label for="email" id="form-label">Email:</label>
-            <input type="email" name="email" id="email">
+            <input type="email" name="email" id="email" required>
             <label for="phone_number" id="form-label">Phone number:</label>
-            <input type="number" name="phone_number" id="phone_number">
+            <input type="number" name="phone_number" id="phone_number" required>
             <label for="birthday" id="form-label">Birthday:</label>
-            <input type="date" name="date_of_birth" id="birthday">
+            <input type="date" name="date_of_birth" id="birthday" required>
             <label for="age" id="form-label">Age:</label>
-            <input type="number" name="age" id="age">
+            <input type="number" name="age" id="age" required>
             <label for="password" id="form-label">Password:</label>
-            <input type="password" name="password" id="password">
-            <input type="file" name="profile_picture" id="profile-pic-upload">
+            <input type="password" name="password" id="password" required>
+            <input type="file" name="profile_picture" id="profile-pic-upload" required>
             <button type="submit">Submit</button>
         </form>
     </div>

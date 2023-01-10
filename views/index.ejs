@@ -1,27 +1,42 @@
+<!-- Check if user is logged in. this is needed for the header to work or it will throw an error 
+also send the location the page is and the username of the logged in user-->
 <%if(authenticated === true){%>
 <%-include("partials/header", {location: "Home", username: username, authenticated: authenticated});%>
 <%} else{%>
 <%-include("partials/header", {location: "Home", authenticated: authenticated});%>
 <%}%>
-<h3><i class="bi bi-collection"></i> News Feed</h3>
-<!-- ejs code start -->
 
-<!-- ejs code end -->
-<div id="post-card">
-    <div class="post-card-a">
-        <div id="post-card-header">
-            <img src="images/profile.jpg" alt="profile" class="profile-img-sm">
-            <span id="author-profile-detail">Dada Clement</span></br>
-            <span id="author-profile-detail">28 November 2022 12:23am <i class="bi bi-globe-asia-australia"> </i> </span>
-            <button class="dottee"><i class="bi bi-three-dots"></i></button>
-        </div></br>
-        <p>Dada Clement updated his profile picture</p>
-    </div>
-    <img src="images/profile.jpg" alt="post-image" class="post-img">
-</div>
+<!-- display the news feed, what users post -->
+<h3><i class="bi bi-collection"></i> News Feed</h3>
+<p style="color: blue;"><a href="/post">Create a post</a></p>
+
+<%if(typeof posts != "undefined"){%>
+    <%posts.forEach((post) => {%>
+        <div id="post-card">
+            <div class="post-card-a">
+                <div id="post-card-header">
+                    <img src="images/<%=post.userPicture%>" alt="profile" class="profile-img-sm">
+                    <span id="author-profile-detail"><%=post.username%></span></br>
+                    <span id="author-profile-detail"><%=post.time%> <i class="bi bi-globe-asia-australia"> </i> </span>
+                    <button class="dottee"><i class="bi bi-three-dots"></i></button>
+                </div></br>
+                <p><%=post.post%> </p>
+            </div>
+            <!-- <img src="images/profile.jpg" alt="post-image" class="post-img"> -->
+        </div>
+    </br>
+    <%});%>
+<%}else{%>
+    <h3>Wow! No post Yet</h3>
+<%}%>
+
+<h3>Registered Users(click to messsage):</h3>
+<!-- Display the registered users on the platform so that users can see other users and messsage them. -->
 <%users.forEach((user) => {%>
     <%if(user.id !== user_id){%>
         <a href="/message?fgId=<%=user._id%>"><p><%=user.username%></p></a>
     <%}%>
 <%});%>
+
+<!-- include the footer with the brandname. this is needed for the footer to function well -->
 <%-include("partials/footer", {brandName: "Socialite"});%>

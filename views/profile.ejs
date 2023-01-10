@@ -1,17 +1,17 @@
 <%if(authenticated === true){%>
-<%-include("partials/header", {location: "Profile", authenticated: authenticated, username: username});%>
+<%-include("partials/header", {location: "Profile", authenticated: authenticated, username: user.username});%>
 <%} else{%>
 <%-include("partials/header", {location: "Profile", authenticated: authenticated});%>
 <%}%>
 <h3><i class="bi bi-tag-fill icons"></i>Profile</h3>
-<img src="images/profile.jpg" alt="profile image" class="profile-img-md">
-<p style="margin-left:3rem">Authority</p>
-<h2 class="profile-pg-name">Dada Clement</h2>
-<p>dadaauthourity23@gmail.com</p>
+<img src="images/<%=user.profile_picture%>" alt="profile image" class="profile-img-md">
+
+<h2 class="profile-pg-name"><%=user.username%></h2>
+<p><%=user.email%></p>
 <p>Posts: 0</p>
-<p>Friends: 24</p>
-<p>Birthday: 27 September 2022</p>
-<p>Age: 18 Yrs</p>
+<p>Friends: 0</p>
+<p>Birthday: 0</p>
+<p>Age: 0 Yrs</p>
 
 <a href="/edit-profile"><i class="bi bi-pencil"></i><p class="edit-profile-button">Edit</p></a></br>
 <a href="/settings">Go to settings</a>

@@ -10,29 +10,38 @@ const MongoStore = require("connect-mongo");
 const passport = require("passport");
 const passportCustom = require("passport-custom");
 const CustomStrategy = passportCustom.Strategy;
+const formidable = require("formidable");
+const fs = require("fs");
+const getHomePage = require("./embeds/homepage/getHomePage");
+const { getLoginPage, getLogoutPage } = require("./embeds/login/getLoginPage");
+const getLoginPost = require("./embeds/login/getLoginPost");
+const getRegisterPage = require("./embeds/register/getRegisterPage");
+const getRegisterPost = require("./embeds/register/getRegisterPost");
+const { getMessagePage, getMessagesPage } = require("./embeds/message/getMessagePage");
+const { getProfilePage, getSettingsPage } = require("./embeds/profile/getProfilePage");
+const savePosts = require("./embeds/posts/saveposts");
+const getPostPage = require("./embeds/posts/getPostPage");
+
+// import mongoose model 
+const { User, Usermsgs, Post } = require("./modules/mongooseModels.js");
 
 const app = express();
+// // connect to mongoose
+// // mongoose.connect("mongodb+srv://authority:4141clement%3F@cluster0.gs6bw9m.mongodb.net/socialiteDB");
+mongoose.connect("mongodb://localhost:27017/socialiteDB");
+// // get mongoose client
+const mongooseClient = mongoose.connection.getClient();
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
-
-// connect to mongoose
-// mongoose.connect("mongodb+srv://authority:4141clement%3F@cluster0.gs6bw9m.mongodb.net/socialiteDB");
-mongoose.connect("mongodb://localhost:27017/socialiteDB");
-
- 
-// get mongoose client
-const mongooseClient = mongoose.connection.getClient();
-
 // express session and passport connecting to the session
 app.use(session({
     secret: process.env.SECRET,
     resave: false,
     saveUninitialized: false,
     name: "socialite",
-    store: MongoStore.create({
-        // mongoUrl: 'mongodb://localhost:27017/socialiteDB',
+    store: MongoStore.create({  
         client: mongooseClient,
         touchAfter: 24 * 3600,
         crypto: {
@@ -43,28 +52,6 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-
-// user mongoose schema
-const userSchema = new mongoose.Schema({
-    username: String,
-    first_name: String,
-    last_name: String,
-    email_address: String,
-    phone_number: String,
-    age: Number,
-    date_of_birth: String,
-    password: String,
-    profile_picture: String,
-    friends: Number,
-    posts: Number,
-    groups: Number
-});
-
-
-// define User model
-const User = mongoose.model("User", userSchema);
-
-// for passport login and signup authentication
 passport.use('userLR', new CustomStrategy(
     function(req, done) {
         User.findOne({
@@ -76,635 +63,65 @@ passport.use('userLR', new CustomStrategy(
     }
 ));
 
-
 passport.serializeUser(function(user, done) {
     done(null, user.id);
-  });
+});
   
-  passport.deserializeUser(function(id, done) {
+passport.deserializeUser(function(id, done) {
     User.findById(id, function (err, user) {
-      done(err, user);
+        done(err, user);
     });
-  });
-
-// passport authentication END
-
-
-// user messaging schema
-const usrmsgsSchema = new mongoose.Schema({
-    userId: String,
-    username: String,
-    values: [{
-        fgType: String,
-        fgId: String,
-        name: String,
-        picture: String,
-        status: String,
-        date: [{
-            day: Number,
-            month: Number, 
-            year: Number,
-        }],
-        time: [{
-            second: Number,
-            minute: Number, 
-            hour: Number,
-        }],
-        message: [{
-            msgType: String,
-            status: String,
-            message: String,
-            date: [{
-                day: Number,
-                month: Number, 
-                year: Number,
-            }],
-            time: [{
-                second: Number,
-                minute: Number, 
-                hour: Number,
-            }],
-        }], 
-    }],
 });
 
-// user messaging model creation
-const Usermsgs = mongoose.model("Usermsgs", usrmsgsSchema);
-
-/////Routing
-// server GET Requests
-// homepage for news feed
 app.get("/", (req, res) => {
-    if(req.isAuthenticated()){
-        User.find({}, (err, users) => {
-            if(!err){
-                res.render("index", {authenticated: true, user_id: req.user.id, username: req.user.username, users: users});     
-            }
-        });
-    }
-    else{
-        res.redirect("/login")
-    }
+    getHomePage(req, res);
 });
-// messages
-app.get("/messages", (req, res) => {
-    if(req.isAuthenticated()){
-        res.render("messages", {type: "gn-messages", authenticated: true, username: req.user.username});
-    } else{
-        res.redirect("/login?url=messages");
-    }
-});
-app.get("/message", (req, res) => {
-    if(req.isAuthenticated()){
 
-        if(req.query.fgId){
-            Usermsgs.findOne({userId: req.user.id, "values.fgId": req.query.fgId}, (err, found) => {
-                User.findOne({_id: req.query.fgId}, (err, fgss) => {
-                    if(fgss){
-                        if(found != null){
-                            res.render("messages", {
-                                type: "ps-messages", 
-                                authenticated: true, 
-                                username: req.user.username, 
-                                fgId: req.query.fgId,
-                                fgDetails: fgss,
-                                msgValues: found.values
-                            });
-                        }else{
-                            res.render("messages", {
-                                type: "ps-messages", 
-                                authenticated: true, 
-                                username: req.user.username, 
-                                fgDetails: fgss,
-                                fgId: req.query.fgId,
-                            });
-                        }
-                    }
-                    else{
-                        res.redirect("/messages");
-                    }
-                });
-            });
-        } else{
-            res.redirect("/messages");
-        }
-
-
-    }else{
-        res.redirect("/login?url=message?fgId=" + req.query.fgId);
-    }
-});
-// profile page
-app.get("/profile", (req, res) => {
-    if(req.isAuthenticated()){
-        res.render("profile", {authenticated: true, username: req.user.username});
-    } else{
-        res.render("profile", {authenticated: false});
-    }
-});
-// login page
 app.get("/login", (req, res) => {
-    if(req.isAuthenticated()){
-        res.redirect("back");
-    } else{
-        if(req.query.message){
-            res.render("login", {loginType: "email", authenticated: false, url: " ", message: req.query.message});
-        }
-        else{
-            if(req.query.url){
-                res.render("login", {loginType: "email", authenticated: false, url: req.query.url});
-            }else{
-                res.render("login", {loginType: "email", authenticated: false, url: " "});
-            }
-        }
-    }
-});
-// sign up page
-app.get("/signup", (req, res) => {
-    if(req.isAuthenticated()){
-        res.redirect("back");
-    } else{
-       res.render("register", {authenticated: false}); 
-    }
-});
-// settings page
-app.get("/settings", (req, res) => {
-    if(req.isAuthenticated()){
-        res.render("settings", {authenticated: true, username: req.user.username});
-    } else{
-       res.render("settings", {authenticated: false}); 
-    }
-}) ;
-app.get("/logout", (req, res) => {
-    req.logout(function(err) {
-        if (err) { return next(err); }
-        });
-        res.redirect("/login");
+    getLoginPage(req, res);
 });
 
+getLoginPost(app);
 
-
-// server POST Requests
-// signup POST request
-app.post("/signup",
-(req, res) => {
-    const first_name = req.body.first_name;
-    const last_name = req.body.last_name;
-    const username = last_name + first_name;
-    const email_address = req.body.email;
-    const phone_number = req.body.phone_number;
-    const age = req.body.age;
-    const date_of_birth = req.body.date_of_birth;
-    const profile_picture = req.body.profile_picture;
-    const password = req.body.password;
-
-    const user = new User({
-        username: username,
-        first_name: first_name,
-        last_name: last_name,
-        email_address: email_address,
-        phone_number: phone_number,
-        age: age,
-        date_of_birth: date_of_birth,
-        profile_picture: profile_picture,
-        password: password,
-    });
-    user.save((err) => {
-        if(!err){
-            res.redirect("/login?message=Signup successful, please login!")
-        }
-    });
-
-
-    // bcrypt.hash(req.body.password, 5, (err, hash) => {
-    //     if(!err){
-    //         const passwordHash = hash;
-    //         const user = new User({
-    //             username: username,
-    //             first_name: first_name,
-    //             last_name: last_name,
-    //             email_address: email_address,
-    //             phone_number: phone_number,
-    //             age: age,
-    //             date_of_birth: date_of_birth,
-    //             profile_picture: profile_picture,
-    //             password: passwordHash,
-    //         });
-    //         user.save((err) => {
-    //             if(!err){
-    //                 res.send("Saved Succesfully!")
-    //             }
-    //         });
-    //     }
-    // });
-
-});
-  
-// login POST request  
-app.post("/login", 
-passport.authenticate('userLR', { failureRedirect: "/login"}),
-(req, res) => {
-res.redirect("/" + req.query.url);
-//  if(req.query.type === "username"){
-//     const user = new User({
-//         username: req.body.username,
-//         password: req.body.password
-//     });
-//     req.login(user, function(err){
-//         if(err){
-//             console.log(err);
-//         } else {
-//             passport.authenticate("local")
-//             (req, res, function(err){
-//                 if(err){
-//                     console.log(err);
-//                 }
-//                 res.redirect("/" + req.query.url);
-//             });
-//         }
-//     }); 
-//  }
-    
-//  if(req.query.type === "email"){
-//     const user = new User({
-//         email_address: req.body.email,
-//         password: req.body.password
-//     });
-//     req.login(user, function(err){
-//         if(err){
-//             console.log(err);
-//         } else {
-//             passport.authenticate("local")
-//             (req, res, function(err){
-//                 if(err){
-//                     console.log(err);
-//                 }
-//                 res.redirect("/" + req.query.url);
-//             });
-//         }
-//     }); 
-//  }
-       
+app.get("/logout", (req, res, next) => {
+    getLogoutPage(req, res, next);
 });
 
-// messaging POST requests
+app.get("/message", (req, res) => {
+    getMessagePage(req, res);
+});
+
 app.post("/message", (req, res) => {
-    if(req.isAuthenticated()){
-        // save to own account
-
-        Usermsgs.findOne({userId: req.user.id}, (err, found) => {
-
-            if(found != null){
-        
-                // update the records
-                User.findById({_id: req.query.fgId}, (err, got) => {
-                    const userId = req.user.id;
-                    const username = req.user.username;
-                    const type = "friend";
-                    const fgId = req.query.fgId;
-                    const name = got.username;
-                    const picture = got.profile_picture;
-                    const status = "read";
-                    /**** ****/
-                    const d = new Date();
-                    const day = d.getDate();
-                    const month = d.getMonth() + 1;
-                    const year = d.getFullYear();
-                    const second = d.getSeconds();
-                    const minute = d.getMinutes();
-                    const hour = d.getHours();
-                    /**** ****/
-                    const msgType = "sent";
-                    const msgStatus = "read";   
-                    const message = req.body.message;
-                
-                    Usermsgs.findOne({userId: req.user.id, "values.fgId": req.query.fgId}, (err, found) => {
-
-            
-                            
-                            if(found != null){
-                                found.values.forEach((foundValues) => {
-                                    if(foundValues.fgId == req.query.fgId){
-                                        Usermsgs.findOneAndUpdate({userId: req.user.id, "values.fgId": req.query.fgId}, 
-                                        {$push: {
-                                            "values.$.message": [{
-                                                msgType: msgType,
-                                                status: msgStatus,
-                                                message: message,
-                                                "date.$.day": day,
-                                                "date.$.month": month,
-                                                "date.$.year": year,
-                                                "time.$.second": second,
-                                                "time.$.minute": minute,
-                                                "time.$.hour": hour,
-                                            }],
-                                        }},
-                                        (err, done) => {
-                                            // if(done){
-                                            //     console.log("successful");
-                                            // }else{
-                                            //     console.log("error encountered", err)
-                                            // }
-                                        });  
-                                    }
-                                });  
-                            }   
-                            else{
-                                // if not available create a new values array.
-                
-                                Usermsgs.findOneAndUpdate({userId: req.user.id}, 
-                                {$push: {
-                                    values: [{
-                                        fgType: type,
-                                        fgId: fgId,
-                                        name: name,
-                                        picture: picture,
-                                        status: status,
-                                        date: [{
-                                            day: day,
-                                            month: month, 
-                                            year: year,
-                                        }],
-                                        time: [{
-                                            second: second,
-                                            minute: minute, 
-                                            hour: hour,
-                                        }],
-                                        message: [{
-                                            msgType: msgType,
-                                            status: msgStatus,
-                                            message: message,
-                                            date: [{
-                                                day: day,
-                                                month: month, 
-                                                year: year,
-                                            }],
-                                            time: [{
-                                                second: second,
-                                                minute: minute, 
-                                                hour: hour,
-                                            }],
-                                        }], 
-                                    }],
-                                }},
-                                (err, done) => {
-                                    // if(done){
-                                    //     console.log("Succesful");
-                                    // }else{
-                                    //     console.log("error encountered!", err);
-                                    // }
-                                });
-                            }
-                    });
-            });
-
-            } else{
-                // create new documents if doesn't exist before.
-                User.findById({_id: req.query.fgId}, (err, got) => {
-                    const userId = req.user.id;
-                    const username = req.user.username;
-                    const type = "friend";
-                    const fgId = req.query.fgId;
-                    const name = got.username;
-                    const picture = got.profile_picture;
-                    const status = "read";
-                    /**** ****/
-                    const d = new Date();
-                    const day = d.getDate();
-                    const month = d.getMonth() + 1;
-                    const year = d.getFullYear();
-                    const second = d.getSeconds();
-                    const minute = d.getMinutes();
-                    const hour = d.getHours();
-                    /**** ****/
-                    const msgType = "sent";
-                    const msgStatus = "read";   
-                    const message = req.body.message;
-                    const newUserMsgs = new Usermsgs({
-                        userId: userId,
-                        username: username,
-                        values: [{
-                            fgType: type,
-                            fgId: fgId,
-                            name: name,
-                            picture: picture,
-                            status: status,
-                            date: [{
-                                day: day,
-                                month: month, 
-                                year: year,
-                            }],
-                            time: [{
-                                second: second,
-                                minute: minute, 
-                                hour: hour,
-                            }],
-                            message: [{
-                                msgType: msgType,
-                                status: msgStatus,
-                                message: message,
-                                date: [{
-                                    day: day,
-                                    month: month, 
-                                    year: year,
-                                }],
-                                time: [{
-                                    second: second,
-                                    minute: minute, 
-                                    hour: hour,
-                                }],
-                            }], 
-                        }],
-                    });
-                    newUserMsgs.save((err) => {
-                        // if(err){
-                        //     console.log("Error: " + err);
-                        // }else{
-                        //     console.log("successful");
-                        // }
-                    });
-                });
-            }
-        });
-
-
-    // save to friend account
-
-    Usermsgs.findOne({userId: req.query.fgId}, (err, found) => {
-        if(found != null){
-        //     // update the records
-            User.findById({_id: req.query.fgId}, (err, got) => {
-                const userId = req.query.fgId;
-                const username = got.username;
-                const type = "friend";
-                const fgId = req.user.id;
-                const name = req.user.username;
-                const picture = req.user.profile_picture;
-                const status = "unread";
-                /**** ****/
-                const d = new Date();
-                const day = d.getDate();
-                const month = d.getMonth() + 1;
-                const year = d.getFullYear();
-                const second = d.getSeconds();
-                const minute = d.getMinutes();
-                const hour = d.getHours();
-                /**** ****/
-                const msgType = "recieved";
-                const msgStatus = "unread";   
-                const message = req.body.message;
-            
-                Usermsgs.findOne({userId: req.query.fgId, "values.fgId": req.user.id}, (err, found) => {
-                    if(found != null){
-                        found.values.forEach((foundValues) => {
-                            if(foundValues.fgId == req.user.id){
-                                Usermsgs.findOneAndUpdate({userId: req.query.fgId, "values.fgId": req.user.id}, 
-                                {$push: {
-                                    "values.$.message": [{
-                                        msgType: msgType,
-                                        status: msgStatus,
-                                        message: message,
-                                        "date.$.day": day,
-                                        "date.$.month": month,
-                                        "date.$.year": year,
-                                        "time.$.second": second,
-                                        "time.$.minute": minute,
-                                        "time.$.hour": hour,
-                                    }],
-                                }},
-                                (err, done) => {
-                                    // if(done){
-                                    //     console.log("Succesful");
-                                    // } else{
-                                    //     console.log("error encountered");
-                                    // }
-                                });
-                            }
-                        });
-                        
-                        
-                    }else{
-                         // if not available create a new values array.
-                         Usermsgs.findOneAndUpdate({userId: req.query.fgId}, 
-                            {$push: {
-                                values: [{
-                                    fgType: type,
-                                    fgId: fgId,
-                                    name: name,
-                                    picture: picture,
-                                    status: status,
-                                    date: [{
-                                        day: day,
-                                        month: month, 
-                                        year: year,
-                                    }],
-                                    time: [{
-                                        second: second,
-                                        minute: minute, 
-                                        hour: hour,
-                                    }],
-                                    message: [{
-                                        msgType: msgType,
-                                        status: msgStatus,
-                                        message: message,
-                                        date: [{
-                                            day: day,
-                                            month: month, 
-                                            year: year,
-                                        }],
-                                        time: [{
-                                            second: second,
-                                            minute: minute, 
-                                            hour: hour,
-                                        }],
-                                    }], 
-                                }],
-                            }},
-                            (err, done) => {
-                                // if(done){
-                                //     console.log("Succesful");
-                                // }else{
-                                //     console.log("error encountered!");
-                                // }
-                            });
-                    }
-                });
-        });
-            
-
-        }else{
-            // create new document if doesn't exist before
-            User.findById({_id: req.query.fgId}, (err, got) => {
-                const userId = req.query.fgId;
-                const username = got.username;
-                const type = "friend";
-                const fgId = req.user.id;
-                const name = req.user.username;
-                const picture = req.user.profile_picture;
-                const status = "unread";
-                /**** ****/
-                const d = new Date();
-                const day = d.getDate();
-                const month = d.getMonth() + 1;
-                const year = d.getFullYear();
-                const second = d.getSeconds();
-                const minute = d.getMinutes();
-                const hour = d.getHours();
-                /**** ****/
-                const msgType = "recieved";
-                const msgStatus = "unread";   
-                const message = req.body.message;
-                const newUserMsgs = new Usermsgs({
-                    userId: userId,
-                    username: username,
-                    values: [{
-                        fgType: type,
-                        fgId: fgId,
-                        name: name,
-                        picture: picture,
-                        status: status,
-                        date: [{
-                            day: day,
-                            month: month, 
-                            year: year,
-                        }],
-                        time: [{
-                            second: second,
-                            minute: minute, 
-                            hour: hour,
-                        }],
-                        message: [{
-                            msgType: msgType,
-                            status: msgStatus,
-                            message: message,
-                            date: [{
-                                day: day,
-                                month: month, 
-                                year: year,
-                            }],
-                            time: [{
-                                second: second,
-                                minute: minute, 
-                                hour: hour,
-                            }],
-                        }], 
-                    }],
-                });
-                newUserMsgs.save((err) => {
-                    // if(!err){
-                    //     console.log("Successful");
-                    // }else{
-                    //     console.log("Error: " + err);
-                    // }
-                });
-            });
-        }
-    });
-    res.redirect("/message?fgId=" + req.query.fgId);
-}else{
-    res.redirect("/login?url=message?fgId=" + req.query.fgId);
-}
-
+    getMessagePost(req, res);
 });
 
-app.listen(3000, () => {console.log("app running on port 3000");});
+app.get("/messages", (req, res) => {
+    getMessagesPage(req, res);
+});
+
+app.get("/post", (req, res) => {
+    getPostPage(req, res);
+});
+
+app.post("/post", (req, res) => {
+    savePosts(req, res);
+});
+
+app.get("/profile", (req, res) => {
+    getProfilePage(req, res);
+});
+
+app.get("/settings", (req, res) => {
+    getSettingsPage(req, res);
+});
+
+app.get("/signup", (req, res) => {
+    getRegisterPage(req, res);
+});
+
+app.post("/signup", (req, res) => {
+    getRegisterPost(req, res);
+});
+
+
+app.listen(3001, () => {console.log("app running on port 3001");});

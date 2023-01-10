@@ -1,0 +1,18 @@
+<!-- Check if user is logged in. this is needed for the header to work or it will throw an error 
+also send the location the page is and the username of the logged in user-->
+<%if(authenticated === true){%>
+    <%-include("partials/header", {location: "Home", username: user.username, authenticated: authenticated});%>
+    <%} else{%>
+    <%-include("partials/header", {location: "Home", authenticated: authenticated});%>
+    <%}%>
+    
+    <!-- display the news feed, what users post -->
+    <h3><i class="bi bi-collection"></i> What are you thinking?</h3>
+
+    <form action="/post" method="post">
+        <textarea name="post" id="post" cols="150" rows="15"></textarea>
+        <button type="submit" class="post-button">Submit</button>
+    </form>
+ 
+    <!-- include the footer with the brandname. this is needed for the footer to function well -->
+    <%-include("partials/footer", {brandName: "Socialite"});%>

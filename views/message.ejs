@@ -1,0 +1,61 @@
+<!-- Check if user is logged in. this is needed for the header to work or it will throw an error 
+also send the location the page is and the username of the logged in user-->
+<%if(authenticated === true){%>
+    <%-include("partials/header", {location: "Messages ||" +  fgDetails.username, authenticated: authenticated, username: username});%>
+    <%} else{%>
+        <%-include("partials/header", {location: "Messages", authenticated: authenticated});%>
+    <%}%>
+
+    <h3><i class="bi bi-chat-right-text icons"></i> Message</h3>
+    </br>
+
+    <!-- personal chat header to display name, profile picture and last seen -->
+    <div class="ps-chat">
+        <div class="ps-chat-head">
+            <a href="/profile">
+                <img src="images/<%=fgDetails.profile_picture%>" alt="profile-picture" class="ps-chat-profile-img-sm">
+            </a>
+            <div id="ps-chat-head-text">
+                <a href="/profile">
+                    <p class="ps-chat-header name"><%=fgDetails.username%></p>
+                </a>
+                <p class="ps-chat-header last-seen"><i class="bi bi-eye-fill"></i> Last seen Today at 12:03pm</p>
+            </div>
+        </div>
+
+        <!-- display messages -->
+        <%if(typeof msgValues !== "undefined"){%>
+            <div class="chat-id-1-2">
+                <%msgValues.forEach((msgValue) => {%>
+                    <%if(msgValue.fgId == fgId){%>
+                        <%msgValue.message.forEach((msgValueMessage) => {%>
+                            <%if(msgValueMessage.msgType === "sent"){%>
+                                <img src="images/<%=userpic%>" alt="profile-picture" class="ps-chat-profile-img-xsm">
+                                <p class="chat-id-2"><%=msgValueMessage.message%></p></br>
+                            <%}else if(msgValueMessage.msgType === "recieved"){%>
+                                <img src="images/<%=msgValue.picture%>" alt="profile-picture" class="ps-chat-profile-img-xsm">
+                                <p class="chat-id-1"><%=msgValueMessage.message%></p></br>
+                            <%}%>
+                        <%});%>
+                    <%}%>
+                <%});%>
+            </div><hr/>
+    
+        <%}else{%>
+            <div class="chat-id-1-2">
+                <p style="text-align: center; background-color: cornflowerblue; border-radius: 15px; padding: 5px;">Say Hi! to your new friend</p></br>
+            </div><hr/>
+    
+        <%}%>
+        
+
+<!-- send message form -->
+        <!-- <img src="images/profile.jpg" alt="profile-picture" class="ps-chat-profile-img-xsm"> -->
+        <form action="/message?fgId=<%=fgId%>" id="message" method="post" class="message-form">
+            <textarea name="message" id="message" cols="40" rows="3" class="message-input"></textarea>
+        </form>
+        <button form="message" class="msg-send-button"><i class="bi bi-send"></i></button></br></br>
+    </div>
+
+<!-- include the footer with the brandname. this is needed for the footer to function well -->
+<%-include("partials/footer", {brandName: "Socialite"});%>
